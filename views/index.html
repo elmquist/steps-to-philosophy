@@ -17,7 +17,27 @@
       <ol id="list">
       </ol>
     </div>
+    <div id="afterlist">
+    </div>
+    <div>
+      <p>Based on the original xkcd below.</p>
+      <a href="https://xkcd.com/903/"><img src="https://imgs.xkcd.com/comics/extended_mind.png"></a> 
+    </div>
     <script>
+      var pathLimit = 50;
+      function getTitles() {
+        return $.map($("ol#list").children(), function (elem, i) {
+          return elem.textContent;
+        });
+      }
+      function alreadySeen(title) {
+        $.each(getTitles(), function (i, elem) {
+          if (title.toLowerCase() === elem.toLowerCase()) {
+            return true;
+          }
+        });
+        return false;
+      }
       function processInput() {
         getFirstLink(document.getElementById('input').value);
       }
@@ -27,9 +47,18 @@
         var lastPage = 'Philosophy';
         if (title.toLowerCase() == lastPage.toLowerCase()) {
           console.log('Found philosophy!');
+          $('<p>We found philosophy in ' + getTitles().length + ' steps!</p>').appendTo('#afterlist');
           return;
         }
-        $.get("/getfirstlink/", { "title": title })
+        if (alreadySeen(title)) {
+          console.log('We found a loop!');
+          $('<p>We found a loop!</p>').appendTo('#afterlist');
+        }
+        if (getTitles().length > pathLimit) {
+          console.log('We took too many steps...');
+          $('<p>We took too many steps...</p>').appendTo('#afterlist');
+        }
+        $.get("/firstlink/", { "title": title })
         .done(function(data) {
           var json = $.parseJSON(data);
           var firstLink = json["first_link"]

@@ -20,7 +20,7 @@ class MainPage(webapp2.RequestHandler):
     return jinja2.Environment(loader=jinja2.FileSystemLoader('./views'))
 
 
-class GetFirstLink(webapp2.RequestHandler):
+class FirstLink(webapp2.RequestHandler):
   def get(self):
     # TODO: add memcache here.
     logging.debug(self.request)
@@ -33,5 +33,5 @@ class GetFirstLink(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
-  ('/getfirstlink/', GetFirstLink),
+  ('/firstlink/', FirstLink),
 ], debug=True)
