@@ -46,27 +46,54 @@ def RemoveParentheses(text):
 
 
 def FindAllLinks(text):
-  level = 0
+  p_level = 0
+  in_parens = False
+  b_level = 0
+  in_brackets = False
   links = []
   link = ''
   for char in text:
-    if char == '[':
-      level += 1
+    # This gets pretty grungy.
+    # There are 2 things we care about:
+    # 1. What is the first type of nested thing (brackets, parentheses) which we entered?
+    # 2. When do we exit that thing (requires keeping balance)?
+    #
+    # So we group into those 3 states:
+    # 1. we're in parenthes.
+    # 2. we're in brackets.
+    # 3. we're in neither, and only really care about entering one of the above.
+    if in_parens:
+      if char == '(':
+        p_level += 1
+      elif char == ')':
+        p_level -= 1
+        if p_level == 0:
+          in_parens = False
+
+    elif in_brackets:
       link += char
-    elif char == ']':
-      level -= 1
-      link += char
-      if level == 0:
-        links.append(link)
-        link = ''
-    elif level > 0:
-      link += char
-  return links
+
+      if char == '[':
+        b_level += 1
+      elif char == ']':
+        b_level -= 1
+        if b_level == 0:
+          yield link
+          in_brackets = False
+          link = ''
+
+    else:
+      if char == '[':
+        in_brackets = True
+        b_level += 1
+        link += char
+      elif char == '(':
+        in_parens = True
+        p_level += 1
 
 
 def Clean(text):
   text = RemoveTemplates(text)
-  text = RemoveParentheses(text)
   return text.strip()
 
 
@@ -80,8 +107,7 @@ def FindFirstLink(text):
   PrintD('raw text\n\n' + text)
   text = Clean(text)
   PrintD('clean text\n\n' + text)
-  links = FindAllLinks(text)
-  for link in links:
+  for link in FindAllLinks(text):
     if re.match('\S+:.*', link):
       PrintD('skipping non-wiki link %s' % link)
       continue
