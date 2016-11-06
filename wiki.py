@@ -45,51 +45,78 @@ def RemoveParentheses(text):
   return ret
 
 
+class LinkFinder():
+  def __init__(self, text):
+    self.text = text
+    self.p_level = 0
+    self.in_parens = False
+    self.b_level = 0
+    self.in_brackets = False
+    self.link = ''
+
+
+  # We're in parentheses. We only really care about getting out of here.
+  def StepParens(self, char):
+    if char == '(':
+      self.p_level += 1
+    elif char == ')':
+      self.p_level -= 1
+      if self.p_level == 0: self.in_parens = False
+
+
+  # We're in brackets! Keep track of the current link (self.link), in addition
+  # to our bracket level (remember nesting), so we know when to exit (the end
+  # of the link).
+  # This returns the link if it is completed (otherwise doesn't return
+  # anything).
+  def StepBrackets(self, char):
+    self.link += char
+    if char == '[':
+      self.b_level += 1
+    elif char == ']':
+      self.b_level -= 1
+      # We reached the end of the link. Return it and tidy up.
+      if self.b_level == 0:
+        link = self.link
+        self.in_brackets = False
+        self.link = ''
+        return link
+
+
+  # We're in neither parentheses nor brackets. We only care about entering one
+  # of the above from here.
+  def Step(self, char):
+    if char == '[':
+      self.in_brackets = True
+      self.b_level += 1
+      # Start saving the current link.
+      self.link += char
+    elif char == '(':
+      self.in_parens = True
+      self.p_level += 1
+
+
+  def FindAllLinks(self):
+    for char in self.text:
+      # We keep track of the *first* type of thing that we enter (parentheses, brackets).
+      # There can (and will) be nesting within this.
+      # So we group into handling the 3 states:
+      # 1. We're in parenthes.
+      # 2. We're in brackets.
+      # 3. We're in neither.
+      if self.in_parens:
+        self.StepParens(char)
+      elif self.in_brackets:
+        link = self.StepBrackets(char)
+        # If we finished the current link, yield it to the caller.
+        if link: yield link
+      else:
+        self.Step(char)
+
+
+
 def FindAllLinks(text):
-  p_level = 0
-  in_parens = False
-  b_level = 0
-  in_brackets = False
-  links = []
-  link = ''
-  for char in text:
-    # This gets pretty grungy.
-    # There are 2 things we care about:
-    # 1. What is the first type of nested thing (brackets, parentheses) which we entered?
-    # 2. When do we exit that thing (requires keeping balance)?
-    #
-    # So we group into those 3 states:
-    # 1. we're in parenthes.
-    # 2. we're in brackets.
-    # 3. we're in neither, and only really care about entering one of the above.
-    if in_parens:
-      if char == '(':
-        p_level += 1
-      elif char == ')':
-        p_level -= 1
-        if p_level == 0:
-          in_parens = False
-
-    elif in_brackets:
-      link += char
-
-      if char == '[':
-        b_level += 1
-      elif char == ']':
-        b_level -= 1
-        if b_level == 0:
-          yield link
-          in_brackets = False
-          link = ''
-
-    else:
-      if char == '[':
-        in_brackets = True
-        b_level += 1
-        link += char
-      elif char == '(':
-        in_parens = True
-        p_level += 1
+  return LinkFinder(text).FindAllLinks()
 
 
 def Clean(text):
