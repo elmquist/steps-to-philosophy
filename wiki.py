@@ -7,7 +7,7 @@ DEBUG = '-d' in sys.argv
 
 def PrintD(text):
   if not DEBUG: return
-  print text[:800]
+  print(text[:800])
 
 
 def FetchRaw(title):
@@ -21,7 +21,7 @@ def FetchRaw(title):
         'titles': title,
     }
     res = requests.get(API_URL, params=data).json()
-    return res['query']['pages'].values()[0]['revisions'][0]['*']
+    return list(res['query']['pages'].values())[0]['revisions'][0]['*']
 
 
 def RemoveTemplates(text):
@@ -29,7 +29,7 @@ def RemoveTemplates(text):
   for template in parsed.filter_templates():
     try: parsed.remove(template)
     except ValueError: pass
-  return unicode(parsed)
+  return parsed
 
 
 def RemoveParentheses(text):
@@ -70,7 +70,16 @@ def Clean(text):
   return text.strip()
 
 
+def NormalizeTitle(title):
+  title = title.lower()
+  title = title.replace(' ', '_')
+  return title
+
+
 def FindFirstLink(text):
+  PrintD('raw text\n\n' + text)
+  text = Clean(text)
+  PrintD('clean text\n\n' + text)
   links = FindAllLinks(text)
   for link in links:
     if re.match('\S+:.*', link):
@@ -79,17 +88,15 @@ def FindFirstLink(text):
     link = link.split('|')[0]
     link = link.strip('[[')
     link = link.rstrip(']]')
+    link = NormalizeTitle(link)
     return link
 
 
 def ProcessTitle(title):
   text = FetchRaw(title)
-  PrintD('raw text\n\n' + text)
-  text = Clean(text)
-  PrintD('clean text\n\n' + text)
   first_link = FindFirstLink(text)
   return first_link
 
 
 if __name__ == '__main__':
-  print ProcessTitle(sys.argv[1])
+  print(ProcessTitle(sys.argv[1]))

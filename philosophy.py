@@ -9,13 +9,13 @@ def FindPage(start, end='Philosophy'):
   while current.lower() != end.lower():
     path.append(current)
     if path.count(current) > 1:
-      print 'found a loop!'
-      print path
+      print('found a loop!')
+      print(path)
       break
-    print 'WIKI PAGE %s' % current
+    print('WIKI PAGE %s' % current)
     current = wiki.ProcessTitle(current)
 
 
 if __name__ == '__main__':
-  print FindPage(sys.argv[1])
+  print(FindPage(sys.argv[1]))
 
