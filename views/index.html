@@ -17,9 +17,10 @@
   <body>
     <h2>Steps to philosophy</h2>
     <div>
-      <form action="javascript:processInput();">
+      <form onsubmit="return false;">
         <input id="input" type="text" size='50' placeholder="Example: Basketball">
-        <input type="submit" value="Submit">
+        <input type="submit" value="Submit" onclick="return processInput(this)">
+        <input type="submit" value="Random article" onclick="return processInput(this)">
       </form>
     </div>
     <div>
@@ -50,9 +51,25 @@
         }
         return false;
       }
-      function processInput() {
+      function cleanup() {
         $('#list').empty();
         $('#afterlist').empty();
+      }
+      function processInput(button) {
+        cleanup();
+        if (button.value == "Random article") {
+          // Yikes. http://stackoverflow.com/questions/20295235/getting-link-from-random-article
+          $.getJSON("http://en.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&explaintext&exintro=&format=json&callback=?", function (data) {
+            $.each(data.query.pages, function(k, v) {
+              $.getJSON('http://en.wikipedia.org/w/api.php?action=query&prop=info&pageids='+v.pageid+'&inprop=url&format=json&callback=?', function(url) {
+                $.each(url.query.pages, function(key, page) {
+                  getFirstLink(page.fullurl.replace('https://en.wikipedia.org/wiki/', ''));
+                });
+              });
+            });
+          });
+          return false;
+        }
         var inputTitle = document.getElementById('input').value;
         inputTitle = inputTitle.replace(" ", "_");
         getFirstLink(inputTitle);
