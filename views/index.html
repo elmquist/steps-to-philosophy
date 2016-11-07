@@ -66,7 +66,9 @@
           getFirstLink(firstLink);
         })
         .error(function(req, status, err) {
-          alert("Received error " + string(status));
+          console.log("Received error: " + err);
+          $('<p>Apologies, we encountered an error when processing ' + title + '.</p>').appendTo('#afterlist');
+          return;
         })
       }
     </script>

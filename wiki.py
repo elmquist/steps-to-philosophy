@@ -10,6 +10,9 @@ def PrintD(text):
   print(text[:800])
 
 
+class InvalidTitleException(BaseException): pass
+
+
 def FetchRaw(title):
     API_URL = 'https://en.wikipedia.org/w/api.php'
     data = {
@@ -21,7 +24,10 @@ def FetchRaw(title):
         'titles': title,
     }
     res = requests.get(API_URL, params=data).json()
-    return list(res['query']['pages'].values())[0]['revisions'][0]['*']
+    try:
+      return list(res['query']['pages'].values())[0]['revisions'][0]['*']
+    except KeyError:
+      raise InvalidTitleException('Wikipedia page not found ' + title)
 
 
 def RemoveTemplates(text):
