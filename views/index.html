@@ -50,7 +50,9 @@
       function processInput() {
         $('#list').empty();
         $('#afterlist').empty();
-        getFirstLink(document.getElementById('input').value);
+        var inputTitle = document.getElementById('input').value;
+        inputTitle = inputTitle.replace(" ", "_");
+        getFirstLink(inputTitle);
       }
       function getFirstLink(title) {
         console.log('getFirstLink(' + title + ')');
