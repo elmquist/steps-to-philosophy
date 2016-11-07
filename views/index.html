@@ -67,10 +67,12 @@
         if (alreadySeen(title)) {
           console.log('We found a loop!');
           $('<p>We found a loop!</p>').appendTo('#afterlist');
+          return;
         }
         if (getTitles().length > pathLimit) {
           console.log('We took too many steps...');
           $('<p>We took too many steps...</p>').appendTo('#afterlist');
+          return;
         }
         $.get("/firstlink/", { "title": title })
         .done(function(data) {
