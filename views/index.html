@@ -48,6 +48,8 @@
         return false;
       }
       function processInput() {
+        $('#list').empty();
+        $('#afterlist').empty();
         getFirstLink(document.getElementById('input').value);
       }
       function getFirstLink(title) {
