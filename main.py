@@ -2,6 +2,8 @@ import json
 import logging
 import os
 
+from google.appengine.api import memcache
+
 import jinja2
 import webapp2
 
@@ -25,11 +27,23 @@ class FirstLink(webapp2.RequestHandler):
     # TODO: add memcache here.
     logging.debug(self.request)
     title = self.request.get('title')
-    self.response.out.write(json.dumps(({'first_link': wiki.ProcessTitle(title)})))
+    first_link = self.get_first_link(title)
+    self.response.out.write(json.dumps(({'first_link': first_link})))
+
+
+  def get_first_link(self, title):
+    first_link = memcache.get(title)
+    if first_link is None:
+      first_link = wiki.ProcessTitle(title)
+      # Note: never expires.
+      memcache.add(title, first_link)
+    return first_link
+
 
   @property
   def jinja_environment(self):
     return jinja2.Environment(loader=jinja2.FileSystemLoader('./views'))
+
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
