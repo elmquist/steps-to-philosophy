@@ -136,14 +136,14 @@ def FindFirstLink(text):
     link = link.split('|')[0]
     link = link.strip('[[')
     link = link.rstrip(']]')
-    link = NormalizeTitle(link)
     return link
 
 
 def ProcessTitle(title):
   text = FetchRaw(title)
   first_link = FindFirstLink(text)
-  return first_link
+  if text.startswith('#REDIRECT'): return ProcessTitle(first_link)
+  return NormalizeTitle(first_link)
 
 
 if __name__ == '__main__':
