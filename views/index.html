@@ -41,11 +41,13 @@
         });
       }
       function alreadySeen(title) {
-        $.each(getTitles(), function (i, elem) {
+        var titles = getTitles();
+        for (var i = 0; i < titles.length - 1; i++) {
+          var elem = titles[i];
           if (title.toLowerCase() === elem.toLowerCase()) {
             return true;
           }
-        });
+        }
         return false;
       }
       function processInput() {
