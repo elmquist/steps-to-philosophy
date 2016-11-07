@@ -13,9 +13,13 @@ class FindAllLinksTest(unittest.TestCase):
       ('I am a [[link with spaces]]', ['[[link with spaces]]']),
       ('skip this ([[link]])', []),
       ('skip this ([[link]]) but not this [[one]]', ['[[one]]']),
+      ('skip this {{[[link]]}}', []),
+      ('skip this {{[[link]]}} but not this [[one]]', ['[[one]]']),
       ('[[links can have (parentheses)]]', ['[[links can have (parentheses)]]']),
       ('[[links can have [[other links]] maybe?]]',
         ['[[links can have [[other links]] maybe?]]']),
+      ('[[links can have {{templates}} maybe?]]',
+        ['[[links can have {{templates}} maybe?]]']),
   ]
 
   def test_list(self):

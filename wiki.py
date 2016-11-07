@@ -1,4 +1,3 @@
-import mwparserfromhell
 import re
 import requests
 import sys
@@ -30,27 +29,6 @@ def FetchRaw(title):
       raise InvalidTitleException('Wikipedia page not found ' + title)
 
 
-def RemoveTemplates(text):
-  parsed = mwparserfromhell.parse(text)
-  for template in parsed.filter_templates():
-    try: parsed.remove(template)
-    except ValueError: pass
-  return parsed
-
-
-def RemoveParentheses(text):
-  level = 0
-  ret = ''
-  for char in text:
-    if char == '(':
-      level += 1
-    elif char == ')':
-      level -= 1
-    elif level == 0:
-      ret += char
-  return ret
-
-
 class LinkFinder():
   def __init__(self, text):
     self.text = text
@@ -58,6 +36,8 @@ class LinkFinder():
     self.in_parens = False
     self.b_level = 0
     self.in_brackets = False
+    self.t_level = 0
+    self.in_template = False
     self.link = ''
 
 
@@ -68,6 +48,15 @@ class LinkFinder():
     elif char == ')':
       self.p_level -= 1
       if self.p_level == 0: self.in_parens = False
+
+
+  # We're in a template. We only really care about getting out of here.
+  def StepTemplate(self, char):
+    if char == '{':
+      self.t_level += 1
+    elif char == '}':
+      self.t_level -= 1
+      if self.t_level == 0: self.in_template = False
 
 
   # We're in brackets! Keep track of the current link (self.link), in addition
@@ -89,8 +78,8 @@ class LinkFinder():
         return link
 
 
-  # We're in neither parentheses nor brackets. We only care about entering one
-  # of the above from here.
+  # We're in neither parentheses/brackets/template. We only care about entering
+  # one of the above from here.
   def Step(self, char):
     if char == '[':
       self.in_brackets = True
@@ -100,18 +89,25 @@ class LinkFinder():
     elif char == '(':
       self.in_parens = True
       self.p_level += 1
+    elif char == '{':
+      self.in_template = True
+      self.t_level += 1
 
 
   def FindAllLinks(self):
     for char in self.text:
-      # We keep track of the *first* type of thing that we enter (parentheses, brackets).
-      # There can (and will) be nesting within this.
-      # So we group into handling the 3 states:
-      # 1. We're in parenthes.
-      # 2. We're in brackets.
-      # 3. We're in neither.
+      # We keep track of the *first* type of thing that we enter (parentheses,
+      # template, brackets).
+      # Note: there can (and will) be nesting within this.
+      # So we group into handling the 4 states:
+      # 1. We're in parentheses.
+      # 2. We're in a template.
+      # 3. We're in brackets.
+      # 4. We're in neither.
       if self.in_parens:
         self.StepParens(char)
+      elif self.in_template:
+        self.StepTemplate(char)
       elif self.in_brackets:
         link = self.StepBrackets(char)
         # If we finished the current link, yield it to the caller.
@@ -125,11 +121,6 @@ def FindAllLinks(text):
   return LinkFinder(text).FindAllLinks()
 
 
-def Clean(text):
-  text = RemoveTemplates(text)
-  return text.strip()
-
-
 def NormalizeTitle(title):
   title = title.lower()
   title = title.replace(' ', '_')
@@ -138,8 +129,6 @@ def NormalizeTitle(title):
 
 def FindFirstLink(text):
   PrintD('raw text\n\n' + text)
-  text = Clean(text)
-  PrintD('clean text\n\n' + text)
   for link in FindAllLinks(text):
     if re.match('\S+:.*', link):
       PrintD('skipping non-wiki link %s' % link)
