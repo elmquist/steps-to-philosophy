@@ -18,6 +18,7 @@ def RunTests():
     expected = ReadFile(expected_file)
     expected = wiki.NormalizeTitle(expected)
     actual = wiki.FindFirstLink(test_input)
+    actual = wiki.NormalizeTitle(actual)
     if actual == expected:
       results.append({'pass': True})
     else:

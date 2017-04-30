@@ -15,7 +15,7 @@ def AddTest(title):
   test_input_file = './e2e_tests/%s.input' % title
   print('writing input to %s' % test_input_file)
   with open(test_input_file, 'w') as f:
-    f.write(raw_text)
+    f.write(raw_text.encode('utf-8'))
   test_output_file = './e2e_tests/%s.expected' % title
   print('writing expected output to %s' % test_output_file)
   with open(test_output_file, 'w') as f:

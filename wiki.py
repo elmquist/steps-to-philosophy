@@ -6,7 +6,7 @@ DEBUG = '-d' in sys.argv
 
 def PrintD(text):
   if not DEBUG: return
-  print(text[:800])
+  print(text[:2000])
 
 
 class InvalidTitleException(BaseException): pass
@@ -129,6 +129,9 @@ def NormalizeTitle(title):
 
 def FindFirstLink(text):
   PrintD('raw text\n\n' + text)
+  # NOTE: quick and dirty hack to get Science.input to pass.
+  # There is probably a better way to handle stripping <ref> tags.
+  text = re.sub('<ref>[^<]+</ref>', '', text)
   for link in FindAllLinks(text):
     if re.match('\S+:.*', link):
       PrintD('skipping non-wiki link %s' % link)
