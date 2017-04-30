@@ -1,0 +1,2 @@
+- Add support for URL parameters (e.g. ?title=science) to pre-fill/link to
+  shareable queries.
