@@ -12,7 +12,7 @@ installed. This was
 for me.
 
 ```sh
-dev_appserver.py app.yaml
+$ dev_appserver.py app.yaml
 ```
 
 ## Deploying
