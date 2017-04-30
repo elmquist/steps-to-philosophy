@@ -7,7 +7,6 @@ from google.appengine.api import memcache
 import jinja2
 import webapp2
 
-import config
 import wiki
 
 
@@ -20,9 +19,12 @@ class MainPage(webapp2.RequestHandler):
 
   @property
   def local_config(self):
+    # NOTE: not sure what I was using this for.
+    return {}
     # Kind of a hack, kind of nice.
     # Define local settings you don't want published in config.py.
-    return {k: vars(config)[k] for k in vars(config) if not k.startswith('_')}
+    #import config
+    #return {k: vars(config)[k] for k in vars(config) if not k.startswith('_')}
 
   @property
   def jinja_environment(self):
